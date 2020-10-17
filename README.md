@@ -116,4 +116,4 @@ services:
 1. ???
 1. Profit!
 
-![APP_NAME](EXAMPLE_IMAGE)
+![APP_NAME]( EXAMPLE_IMAGE )
