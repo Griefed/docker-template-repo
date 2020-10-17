@@ -1,4 +1,4 @@
-[![D-Zone](https://i.griefed.de/images/2020/10/16/d-zone.png)](https://github.com/d-zone-org/d-zone)
+[![APP_NAME](https://i.griefed.de/images/2020/10/17/template.png)](https://github.com/ CREATOR_NAME / REPO_NAME)
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/griefed/
 DOCKER_REPONAME 
