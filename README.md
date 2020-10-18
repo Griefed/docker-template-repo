@@ -1,7 +1,7 @@
 [![APP_NAME](https://i.griefed.de/images/2020/10/17/template.png)](https://github.com/ CREATOR_NAME / REPO_NAME)
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/griefed/
-DOCKER_REPONAME 
+DOCKER_REPONAME
 ?style=flat-square)](https://hub.docker.com/repository/docker/griefed/
 DOCKER_REPONAME
 )
@@ -35,7 +35,7 @@ APP_NAME DESCRIPTION
 
 ---
 
-Creates a Container which runs [CREATOR_PROFILE](https://github.com/ CREATOR_PROFILE ) [APP_NAME](https://github.com/d-zone-org/ APP_NAME ), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image, as seen on EXAMPLE_SITE_IF_EXISTS. 
+Creates a Container which runs [CREATOR_PROFILE](https://github.com/ CREATOR_PROFILE ) [APP_NAME](https://github.com/d-zone-org/ APP_NAME ), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image, as seen on EXAMPLE_SITE_IF_EXISTS.
 
 The lasiobase/alpine image is a custom base image built with [Alpine linux](https://alpinelinux.org/) and [S6 overlay](https://github.com/just-containers/s6-overlay).
 Using this image allows us to use the same user/group ids in the container as on the host, making file transfers much easier
@@ -52,7 +52,8 @@ services:
     image: griefed/APP_NAME
     restart: unless-stopped
     volumes:
-      - ./path/to/config/files:/config
+      - ./path/to/config:/config
+      - ./path/to/data:/data
     environment:
       - TZ=Europe/Berlin
       - PUID=1000  # User ID
@@ -65,8 +66,9 @@ services:
 
 Configuration | Explanation
 ------------ | -------------
-restart | [Restart policy](https://docs.docker.com/compose/compose-file/#restart) Either: "no", always, on-failure, unless-stopped
-volumes | /config contains all relevant configuration files.
+[Restart policy](https://docs.docker.com/compose/compose-file/#restart) | "no", always, on-failure, unless-stopped
+config volume | Contains config files and logs.
+data volume | Contains your/the containers important data.
 TZ | Timezone
 PUID | for UserID
 PGID | for GroupID
@@ -87,7 +89,7 @@ In this instance `PUID=1000` and `PGID=1000`, to find yours use `id user` as bel
 
 ### Raspberry Pi & building the image yourself
 
-Using the [Dockerfile]( LINK_TO_DOCKERFILE ), this container can be built and run on a Raspberry Pi. 
+Using the [Dockerfile]( LINK_TO_DOCKERFILE ), this container can be built and run on a Raspberry Pi.
 I've tested it on a Raspberry Pi 3B.
 
 #### docker-compose.yml
