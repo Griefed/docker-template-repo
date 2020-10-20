@@ -33,6 +33,8 @@ GITHUB_REPONAME
 
 APP_NAME DESCRIPTION
 
+![APP_NAME]( EXAMPLE_IMAGE )
+
 ---
 
 Creates a Container which runs [CREATOR_PROFILE](https://github.com/ CREATOR_PROFILE ) [APP_NAME](https://github.com/d-zone-org/ APP_NAME ), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image, as seen on EXAMPLE_SITE_IF_EXISTS.
@@ -117,5 +119,3 @@ services:
 1. Visit IP.ADDRESS.OF.HOST:80
 1. ???
 1. Profit!
-
-![APP_NAME]( EXAMPLE_IMAGE )
