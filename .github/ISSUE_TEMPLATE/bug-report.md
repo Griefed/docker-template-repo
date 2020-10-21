@@ -21,11 +21,11 @@ about: Report a bug with the container / image
 
 * **Please tell us about your environment:**
 
-  - Docker Image: griefed/image:tag e.g. griefed/d-zone:proxy
-	- docker & docker-compose Version: Use `docker version && docker-compose version`
+   - Docker Image: griefed/image:tag e.g. griefed/d-zone:proxy
+   - docker & docker-compose Version: Use `docker version && docker-compose version`
 
-	```
-	Client: Docker Engine - Community
+```
+Client: Docker Engine - Community
  Version:           19.03.13
  API version:       1.40
  Go version:        go1.13.15
@@ -59,7 +59,6 @@ OpenSSL version: OpenSSL 1.1.1f  31 Mar 2020
 ```
 
   - Browser: [all | Chrome XX | Firefox XX | IE XX | Safari XX | Mobile Chrome XX | Android X.X Web Browser | iOS XX Safari | iOS XX UIWebView | iOS XX WKWebView ]
-  -
-
 
 * **Other information** (e.g. detailed explanation, stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, gitter, etc)
+
