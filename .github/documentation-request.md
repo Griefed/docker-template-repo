@@ -1,6 +1,6 @@
 ---
-Name: Documentation Request
-About: Request for documentation about a certain aspect of the docker image / container
+name: Documentation Request
+about: Request for documentation about a certain aspect of the docker image / container
 ---
 
 # Documentation Request
