@@ -1,9 +1,10 @@
-FROM lsiobase/nginx:3.12
-FROM lsiobase/alpine:3.12
-FROM lsiobase/ubuntu:bionic
-FROM lsiobase/rdesktop:focal
-FROM lsiobase/mono:LTS
-
+### PICK ONE
+# FROM lsiobase/nginx:3.12
+# FROM lsiobase/alpine:3.12
+# FROM lsiobase/ubuntu:bionic
+# FROM lsiobase/rdesktop:focal
+# FROM lsiobase/mono:LTS
+###
 
 RUN \
         echo "**** install dependencies and build tools and stuff ****" && \
