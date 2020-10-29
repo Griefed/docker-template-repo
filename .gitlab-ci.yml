@@ -15,4 +15,4 @@ before_script:
 build:
   stage: build
   script:
-    - docker build --network="host" -t CI_PROJECT_NAME:latest .
+    - docker build --network="host" -t $CI_PROJECT_NAME:latest .
