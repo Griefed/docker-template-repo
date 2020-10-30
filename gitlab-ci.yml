@@ -1,0 +1,33 @@
+stages:
+    - create_readme
+    - build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_VERSION: 19.03.8
+  #Docker version MUST match the version in the runner config.toml
+
+services:
+  - docker:$DOCKER_VERSION-dind
+
+create_readme:
+  stage: create_readme
+  image: alpine:3.12
+  script: 
+    - echo "Creating README for repository."
+    - source .readme_variables
+    - cp .readme_template README.md
+    - sed -i "s/$VARIABLE_IN_README/${VARIABLE_IN_README/g}"" README.md
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - README.md
+
+build:
+  stage: build
+  image: docker:$DOCKER_VERSION
+  script:
+    - echo "Build stage started."
+    - docker info
+    - docker build --network="host" -t $CI_PROJECT_NAME:latest .
