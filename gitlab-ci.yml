@@ -8,25 +8,37 @@ variables:
   DOCKER_VERSION: 19.03.8
   #Docker version MUST match the version in the runner config.toml
 
-services:
-  - docker:$DOCKER_VERSION-dind
-
 create_readme:
   stage: create_readme
   image: alpine:3.12
   script: 
     - echo "Creating README for repository."
     - source .readme_variables
+    - echo $GITHUB_REPONAME
+    - echo $DOCKER_REPONAME
+    - echo $CREATOR_NAME
+    - echo $CREATOR_REPO
+    - echo $EXAMPLE_IMAGE
+    - echo $EXAMPLE_WEBSITE
+    - echo $DESCRIPTION
     - cp .readme_template README.md
-    - sed -i "s/$VARIABLE_IN_README/${VARIABLE_IN_README/g}"" README.md
+    - sed -i "s/$GITHUB_REPONAME/${GITHUB_REPONAME/g}" README.md
+    - sed -i "s/$DOCKER_REPONAME/${DOCKER_REPONAME/g}" README.md
+    - sed -i "s/$CREATOR_NAME/${CREATOR_NAME/g}" README.md
+    - sed -i "s/$CREATOR_REPO/${CREATOR_REPO/g}" README.md
+    - sed -i "s/$EXAMPLE_IMAGE/${EXAMPLE_IMAGE/g}" README.md
+    - sed -i "s/$EXAMPLE_WEBSITE/${EXAMPLE_WEBSITE/g}" README.md
+    - sed -i "s/$DESCRIPTION/${DESCRIPTION/g}" README.md
   artifacts:
     expire_in: 1 week
     paths:
-      - README.md
+      - ./README.md
 
 build:
   stage: build
   image: docker:$DOCKER_VERSION
+  services:
+  - docker:$DOCKER_VERSION-dind
   script:
     - echo "Build stage started."
     - docker info
