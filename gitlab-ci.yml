@@ -13,7 +13,7 @@ create_readme:
   image: alpine:3.12
   script: 
     - echo "Creating README for repository."
-    - source .readme_variables
+    - source ./.gitlab/.readme_variables
     - echo $GITHUB_REPONAME
     - echo $DOCKER_REPONAME
     - echo $CREATOR_NAME
@@ -21,7 +21,7 @@ create_readme:
     - echo $EXAMPLE_IMAGE
     - echo $EXAMPLE_WEBSITE
     - echo $DESCRIPTION
-    - cp .readme_template README.md
+    - cp ./.gitlab/.readme_template ./README.md
     - sed -i "s/$GITHUB_REPONAME/${GITHUB_REPONAME/g}" README.md
     - sed -i "s/$DOCKER_REPONAME/${DOCKER_REPONAME/g}" README.md
     - sed -i "s/$CREATOR_NAME/${CREATOR_NAME/g}" README.md
