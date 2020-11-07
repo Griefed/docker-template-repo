@@ -9,4 +9,6 @@ export CREATOR_USERNAME='Griefed'
 export CREATOR_REPONAME='template'
 export EXAMPLE_SITE_LINK='https://www.example.com'
 export EXAMPLE_IMAGE_LINK='https://www.example.com/screenshot.png'
-export CONTAINER_PORT='1234'
+export CONTAINER_PORT='80'
+export CONTAINER_PORT2='443:443'
+export BASE_IMAGE=alpine
