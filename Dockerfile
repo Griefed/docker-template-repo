@@ -3,8 +3,8 @@
 # FROM lsiobase/ubuntu:bionic
 # FROM lsiobase/rdesktop:focal
 # FROM lsiobase/mono:LTS
+#FROM lsiobase/alpine:3.12
 ###
-FROM lsiobase/alpine:3.12
 
 
 #RUN \
@@ -34,7 +34,7 @@ FROM lsiobase/alpine:3.12
 #
 ## Copy local files
 
-COPY root/ /
+#COPY root/ /
 
 ## Communicate ports and volumes to be used
 #EXPOSE PORT

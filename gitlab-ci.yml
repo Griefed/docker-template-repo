@@ -1,49 +1,37 @@
 stages:
-    - create_readme
+    - readme
     - build
 
-variables:
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_VERSION: 19.03.8
-  #Docker version MUST match the version in the runner config.toml
-  DOCKER_HOST: tcp://docker:2376
+image: docker:19.03.8
 
-services:
-  - docker:19.03.8-dind
-
-create_readme:
-  stage: create_readme
+readme:
+  stage: readme
   image: alpine:3.12
   script: 
-    - echo "Creating README for repository."
-    - source ./.gitlab/.readme_variables
+    - apk add gettext
+    - source .gitlab/.readme_variables
+    - echo ""
+    - echo ""
+    - echo $LOGO_IMAGE_LINK
     - echo $GITHUB_REPONAME
-    - echo $DOCKER_REPONAME
-    - echo $CREATOR_NAME
-    - echo $CREATOR_REPO
-    - echo $EXAMPLE_IMAGE
-    - echo $EXAMPLE_WEBSITE
+    - echo $GITHUB_USERNAME
+    - echo $DOCKERHUB_REPONAME
+    - echo $DOCKERHUB_TAG
+    - echo $DOCKERHUB_USERNAME
     - echo $DESCRIPTION
-    - cp ./.gitlab/.readme_template ./README.md
-    - sed -i "s/$GITHUB_REPONAME/${GITHUB_REPONAME/g}" README.md
-    - sed -i "s/$DOCKER_REPONAME/${DOCKER_REPONAME/g}" README.md
-    - sed -i "s/$CREATOR_NAME/${CREATOR_NAME/g}" README.md
-    - sed -i "s/$CREATOR_REPO/${CREATOR_REPO/g}" README.md
-    - sed -i "s/$EXAMPLE_IMAGE/${EXAMPLE_IMAGE/g}" README.md
-    - sed -i "s/$EXAMPLE_WEBSITE/${EXAMPLE_WEBSITE/g}" README.md
-    - sed -i "s/$DESCRIPTION/${DESCRIPTION/g}" README.md
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - ./README.md
-
+    - echo $CREATOR_USERNAME
+    - echo $CREATOR_REPONAME
+    - echo $EXAMPLE_SITE_LINK
+    - echo $EXAMPLE_IMAGE_LINK
+    - echo $CONTAINER_PORT
+    - echo ""
+    - echo ""
+    - envsubst < .gitlab/readme_template | less
+    - echo ""
+    - echo ""
 build:
   stage: build
-  image: docker:$DOCKER_VERSION
   script:
-    - echo "Build stage started."
-    - docker info
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
