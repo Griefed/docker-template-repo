@@ -8,8 +8,8 @@ on:
 jobs:
   multi-registries:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
     steps:
-    if: github.ref == 'refs/heads/develop'Sieht a
       -
         name: Checkout
         uses: actions/checkout@v2
