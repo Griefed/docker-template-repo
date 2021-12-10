@@ -1,236 +1,236 @@
-stages:
-  - Gradle Test
-  - Docker Test
-  - Documentation
-  - Release
-  - Build Release
-
-Gradle Test:
-  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
-  stage: Gradle Test
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    - which java
-    - echo "**** Java version ****"
-    - java -version
-    - echo "**** Allowing execution of gradlew ****"
-    - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - ./gradlew clean
-  script:
-    - echo "**** Building Project ****"
-  # IF CREATE EXE
-#    - ./gradlew build createExe --info
-    - ./gradlew build --info
-    - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build/libs
-    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
-      build/libs/libraries
-    - echo "**** Renaming files to please the eye ****"
-  # IF CREATE EXE
+#stages:
+#  - Gradle Test
+#  - Docker Test
+#  - Documentation
+#  - Release
+#  - Build Release
+#
+#Gradle Test:
+#  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+#  stage: Gradle Test
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - echo "**** Running in $CI_JOB_ID ****"
+#    - echo "**** Java location ****"
+#    - which java
+#    - echo "**** Java version ****"
+#    - java -version
+#    - echo "**** Allowing execution of gradlew ****"
+#    - chmod +x gradlew
+#    - echo "**** Ensure clean environment ****"
+#    - ./gradlew clean
+#  script:
+#    - echo "**** Building Project ****"
+#  # IF CREATE EXE
+##    - ./gradlew build createExe --info
+#    - ./gradlew build --info
+#    - echo "**** Listing build directory ****"
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build/libs
+#    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+#      build/libs/libraries
+#    - echo "**** Renaming files to please the eye ****"
+#  # IF CREATE EXE
+##    - mv
+##      build/libs/repository.exe
+##      build/libs/REPORITORY.exe
 #    - mv
-#      build/libs/repository.exe
-#      build/libs/REPORITORY.exe
-    - mv
-      build/libs/repository.jar
-      build/libs/REPOSITORY.jar
-    - mv
-      build/libs/repository-javadoc.jar
-      build/libs/REPOSITORY-javadoc.jar
-    - mv
-      build/libs/repository-sources.jar
-      build/libs/REPOSITORY-sources.jar
-  artifacts:
-    paths:
-  # IF CREATE EXE
-#      - build/libs/REPORITORY.exe
-      - build/libs/REPOSITORY.jar
-      - build/reports/tests/test
-    expire_in: 1 week
-  only:
-    - master
-    - main
-  except:
-    refs:
-      - tags
-      - alpha
-      - beta
-    variables:
-      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
-
-Docker Test:
-  needs:
-    - job: 'Gradle Test'
-      artifacts: false
-  stage: Docker Test
-  image: griefed/gitlab-ci-cd:1.0.4
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - docker buildx create --use --name grfdbuilder
-  script:
-    - docker buildx build
-      --push
-      --no-cache
-      --platform linux/amd64,linux/arm64
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop" .
-  only:
-    - master
-    - main
-  except:
-    refs:
-      - tags
-      - alpha
-      - beta
-    variables:
-      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
-
-Release:
-  needs:
-    - job: 'Gradle Test'
-      artifacts: false
-    - job: 'Docker Test'
-      artifacts: false
-  stage: Release
-  image: griefed/gitlab-ci-cd:1.0.4
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  script:
-    - npx semantic-release
-  only:
-    - master
-    - main
-  except:
-    refs:
-      - tags
-    variables:
-      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
-
-Build Release:
-  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
-  stage: Build Release
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    - which java
-    - echo "**** Java version ****"
-    - java -version
-    - echo "**** Allowing execution of gradlew ****"
-    - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - ./gradlew clean
-  script:
-    - echo "**** Building Project ****"
-    # IF CREATE EXE
-    #    - ./gradlew build createExe --info -x test
-    - ./gradlew build --info -x test
-    - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build/libs
-    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
-      build/libs/libraries
-    - echo "**** Renaming files to please the eye ****"
-  # IF CREATE EXE
+#      build/libs/repository.jar
+#      build/libs/REPOSITORY.jar
 #    - mv
-#      build/libs/repository.exe
-#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
-    - mv
-      build/libs/REPOSITORY.jar
-      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
-    - mv
-      build/libs/REPOSITORY-javadoc.jar
-      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
-    - mv
-      build/libs/REPOSITORY-sources.jar
-      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build/libs
-    - echo "**** Uploading packages ****"
-  # IF CREATE EXE
+#      build/libs/repository-javadoc.jar
+#      build/libs/REPOSITORY-javadoc.jar
+#    - mv
+#      build/libs/repository-sources.jar
+#      build/libs/REPOSITORY-sources.jar
+#  artifacts:
+#    paths:
+#  # IF CREATE EXE
+##      - build/libs/REPORITORY.exe
+#      - build/libs/REPOSITORY.jar
+#      - build/reports/tests/test
+#    expire_in: 1 week
+#  only:
+#    - master
+#    - main
+#  except:
+#    refs:
+#      - tags
+#      - alpha
+#      - beta
+#    variables:
+#      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
+
+#Docker Test:
+#  needs:
+#    - job: 'Gradle Test'
+#      artifacts: false
+#  stage: Docker Test
+#  image: griefed/gitlab-ci-cd:1.0.4
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#    - docker buildx create --use --name grfdbuilder
+#  script:
+#    - docker buildx build
+#      --push
+#      --no-cache
+#      --platform linux/amd64,linux/arm64
+#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
+#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
+#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
+#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop" .
+#  only:
+#    - master
+#    - main
+#  except:
+#    refs:
+#      - tags
+#      - alpha
+#      - beta
+#    variables:
+#      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
+
+#Release:
+#  needs:
+#    - job: 'Gradle Test'
+#      artifacts: false
+#    - job: 'Docker Test'
+#      artifacts: false
+#  stage: Release
+#  image: griefed/gitlab-ci-cd:1.0.4
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  script:
+#    - npx semantic-release
+#  only:
+#    - master
+#    - main
+#  except:
+#    refs:
+#      - tags
+#    variables:
+#      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
+
+#Build Release:
+#  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+#  stage: Build Release
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - echo "**** Running in $CI_JOB_ID ****"
+#    - echo "**** Java location ****"
+#    - which java
+#    - echo "**** Java version ****"
+#    - java -version
+#    - echo "**** Allowing execution of gradlew ****"
+#    - chmod +x gradlew
+#    - echo "**** Ensure clean environment ****"
+#    - ./gradlew clean
+#  script:
+#    - echo "**** Building Project ****"
+#    # IF CREATE EXE
+#    #    - ./gradlew build createExe --info -x test
+#    - ./gradlew build --info -x test
+#    - echo "**** Listing build directory ****"
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build/libs
+#    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+#      build/libs/libraries
+#    - echo "**** Renaming files to please the eye ****"
+#  # IF CREATE EXE
+##    - mv
+##      build/libs/repository.exe
+##      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+#    - mv
+#      build/libs/REPOSITORY.jar
+#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+#    - mv
+#      build/libs/REPOSITORY-javadoc.jar
+#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+#    - mv
+#      build/libs/REPOSITORY-sources.jar
+#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build/libs
+#    - echo "**** Uploading packages ****"
+#  # IF CREATE EXE
+##    - 'curl
+##      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+##      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+##        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"'
 #    - 'curl
 #      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-#      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
-#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"'
-    - 'curl
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
-    - 'curl
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"'
-    - 'curl
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"'
-    - echo "**** Create asset links ****"
-  # IF CREATE EXE
+#      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
+#    - 'curl
+#      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+#      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"'
+#    - 'curl
+#      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+#      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"'
+#    - echo "**** Create asset links ****"
+#  # IF CREATE EXE
+##    - 'curl
+##      --request POST
+##      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+##      --data tag_name="${CI_COMMIT_TAG}"
+##      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+##      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+##      --data link_type="package"
+##        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
 #    - 'curl
 #      --request POST
 #      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
 #      --data tag_name="${CI_COMMIT_TAG}"
-#      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
-#      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+#      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
+#      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
 #      --data link_type="package"
 #        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-    - 'curl
-      --request POST
-      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-      --data tag_name="${CI_COMMIT_TAG}"
-      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
-      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
-      --data link_type="package"
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-    - 'curl
-      --request POST
-      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-      --data tag_name="${CI_COMMIT_TAG}"
-      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
-      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
-      --data link_type="package"
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-    - 'curl
-      --request POST
-      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-      --data tag_name="${CI_COMMIT_TAG}"
-      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
-      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
-      --data link_type="package"
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+#    - 'curl
+#      --request POST
+#      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+#      --data tag_name="${CI_COMMIT_TAG}"
+#      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
+#      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
+#      --data link_type="package"
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+#    - 'curl
+#      --request POST
+#      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+#      --data tag_name="${CI_COMMIT_TAG}"
+#      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
+#      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
+#      --data link_type="package"
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+#  rules:
+#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 #Build Docker Release:
 #  stage: Build Release
@@ -260,261 +260,281 @@ Build Release:
 #  rules:
 #    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
-pages:
-  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
-  stage: Documentation
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - which java
-    - chmod +x gradlew
-    - ./gradlew clean
-  script:
-    - ./gradlew javaDoc --info -x test
-    - cp -Rf build/docs/javadoc public
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      public
-  only:
-    - master
-    - main
-  artifacts:
-    paths:
-      - public
-    expire_in: 1 week
+#pages:
+#  # IF JAVA PROJECT
+#  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+#  stage: Documentation
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - which java
+#    - chmod +x gradlew
+#    - ./gradlew clean
+#  script:
+#    - ./gradlew javaDoc --info -x test
+#    - cp -Rf build/docs/javadoc public
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      public
+#  only:
+#    - master
+#    - main
+#  artifacts:
+#    paths:
+#      - public
+#    expire_in: 1 week
+#
+#  # IF QUASAR PROJECT
+#  image: griefed/gitlab-ci-cd:1.0.4
+#  stage: build
+#  cache:
+#    paths:
+#      - node_modules/
+#  before_script:
+#    - npm install
+#    - rm -Rf dist
+#  script:
+#    - quasar build
+#    - cp -Rf dist/spa/* public/
+#  artifacts:
+#    paths:
+#      - public
+#    expire_in: 1 week
 
-Gradle Test Develop:
-  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
-  stage: Gradle Test
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    - which java
-    - echo "**** Java version ****"
-    - java -version
-    - echo "**** Allowing execution of gradlew ****"
-    - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - ./gradlew about
-  script:
-    - echo "**** Building Project ****"
-  # IF CREATE EXE
-#    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon
-    - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build/libs
-    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
-      build/libs/libraries
-    - echo "**** Renaming files to please the eye ****"
-  # IF CREATE EXE
+#Gradle Test Develop:
+#  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+#  stage: Gradle Test
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - echo "**** Running in $CI_JOB_ID ****"
+#    - echo "**** Java location ****"
+#    - which java
+#    - echo "**** Java version ****"
+#    - java -version
+#    - echo "**** Allowing execution of gradlew ****"
+#    - chmod +x gradlew
+#    - echo "**** Ensure clean environment ****"
+#    - ./gradlew about
+#  script:
+#    - echo "**** Building Project ****"
+#  # IF CREATE EXE
+##    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon
+#    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon
+#    - echo "**** Listing build directory ****"
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build/libs
+#    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+#      build/libs/libraries
+#    - echo "**** Renaming files to please the eye ****"
+#  # IF CREATE EXE
+##    - mv
+##      build/libs/repository.exe
+##      build/libs/REPOSITORY-develop.exe
 #    - mv
-#      build/libs/repository.exe
-#      build/libs/REPOSITORY-develop.exe
-    - mv
-      build/libs/repository.jar
-      build/libs/REPOSITORY-develop.jar
-    - mv
-      build/libs/repository-javadoc.jar
-      build/libs/REPOSITORY-develop-javadoc.jar
-  artifacts:
-    paths:
-      - build/libs/REPOSITORY-develop.exe
-      - build/libs/REPOSITORY-develop.jar
-      - build/reports/tests/test
-    expire_in: 1 week
-  except:
-    - master
-    - main
-
-Docker Test Develop:
-  needs:
-    - job: 'Gradle Test Develop'
-      artifacts: false
-  stage: Docker Test
-  image: griefed/gitlab-ci-cd:1.0.4
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - docker buildx create --use --name grfdbuilder
-  script:
-    - docker buildx build
-      --push
-      --no-cache
-      --platform linux/amd64,linux/arm64
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
-      --file Dockerfile.gradle.quasar.webservice .
-  except:
-    - master
-    - main
-
-PreRelease:
-  needs:
-    - job: 'Gradle Test Develop'
-      artifacts: false
-    - job: 'Docker Test Develop'
-      artifacts: false
-  stage: Release
-  image: griefed/gitlab-ci-cd:1.0.4
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  script:
-    - npx semantic-release
-  only:
-    - alpha
-    - beta
-  except:
-    refs:
-      - tags
-    variables:
-      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
-
-Build PreRelease:
-  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
-  stage: Build Release
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    - which java
-    - echo "**** Java version ****"
-    - java -version
-    - echo "**** Allowing execution of gradlew ****"
-    - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - ./gradlew about
-  script:
-    - echo "**** Building Project ****"
-  # IF CREATE EXE
-#    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon -x test
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon -x test
-    - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build/libs
-    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
-      build/libs/libraries
-    - echo "**** Renaming files to please the eye ****"
-  # IF CREATE EXE
+#      build/libs/repository.jar
+#      build/libs/REPOSITORY-develop.jar
 #    - mv
-#      build/libs/repository.exe
-#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
-    - mv
-      build/libs/repository.jar
-      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
-    - mv
-      build/libs/repository-javadoc.jar
-      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
-    - mv
-      build/libs/repository-sources.jar
-      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build/libs
-    - echo "**** Uploading packages ****"
-    - 'curl
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"'
-    - 'curl
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
-    - 'curl
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"'
-    - 'curl
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"'
-    - echo "**** Create asset links ****"
-    - 'curl
-      --request POST
-      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-      --data tag_name="${CI_COMMIT_TAG}"
-      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
-      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
-      --data link_type="package"
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-    - 'curl
-      --request POST
-      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-      --data tag_name="${CI_COMMIT_TAG}"
-      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
-      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
-      --data link_type="package"
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-    - 'curl
-      --request POST
-      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-      --data tag_name="${CI_COMMIT_TAG}"
-      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
-      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
-      --data link_type="package"
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-    - 'curl
-      --request POST
-      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-      --data tag_name="${CI_COMMIT_TAG}"
-      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
-      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
-      --data link_type="package"
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
+#      build/libs/repository-javadoc.jar
+#      build/libs/REPOSITORY-develop-javadoc.jar
+#  artifacts:
+#    paths:
+#      - build/libs/REPOSITORY-develop.exe
+#      - build/libs/REPOSITORY-develop.jar
+#      - build/reports/tests/test
+#    expire_in: 1 week
+#  except:
+#    - master
+#    - main
 
-Build Docker PreRelease:
-  stage: Build Release
-  image: griefed/gitlab-ci-cd:1.0.4
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.4
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - docker buildx create --use --name grfdbuilder
-  script:
-    - docker buildx build
-      --push
-      --no-cache
-      --platform linux/amd64,linux/arm64
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-      --file Dockerfile.gradle.quasar.webservice .
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
+#Docker Test Develop:
+#  needs:
+#    - job: 'Gradle Test Develop'
+#      artifacts: false
+#  stage: Docker Test
+#  image: griefed/gitlab-ci-cd:1.0.4
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#    - docker buildx create --use --name grfdbuilder
+#  script:
+#    - docker buildx build
+#      --push
+#      --no-cache
+#      --platform linux/amd64,linux/arm64
+#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
+#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
+#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
+#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
+#      --file Dockerfile.gradle.quasar.webservice .
+#  except:
+#    - master
+#    - main
+
+#PreRelease:
+#  needs:
+#    - job: 'Gradle Test Develop'
+#      artifacts: false
+#    - job: 'Docker Test Develop'
+#      artifacts: false
+#  stage: Release
+#  image: griefed/gitlab-ci-cd:1.0.4
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  script:
+#    - npx semantic-release
+#  only:
+#    - alpha
+#    - beta
+#  except:
+#    refs:
+#      - tags
+#    variables:
+#      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
+
+#Build PreRelease:
+#  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+#  stage: Build Release
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - echo "**** Running in $CI_JOB_ID ****"
+#    - echo "**** Java location ****"
+#    - which java
+#    - echo "**** Java version ****"
+#    - java -version
+#    - echo "**** Allowing execution of gradlew ****"
+#    - chmod +x gradlew
+#    - echo "**** Ensure clean environment ****"
+#    - ./gradlew about
+#  script:
+#    - echo "**** Building Project ****"
+#  # IF CREATE EXE
+##    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon -x test
+#    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon -x test
+#    - echo "**** Listing build directory ****"
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build/libs
+#    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+#      build/libs/libraries
+#    - echo "**** Renaming files to please the eye ****"
+#  # IF CREATE EXE
+##    - mv
+##      build/libs/repository.exe
+##      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+#    - mv
+#      build/libs/repository.jar
+#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+#    - mv
+#      build/libs/repository-javadoc.jar
+#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+#    - mv
+#      build/libs/repository-sources.jar
+#      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+#    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+#      build/libs
+#    - echo "**** Uploading packages ****"
+#  # IF CREATE EXE
+##    - 'curl
+##      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+##      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+##        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"'
+#    - 'curl
+#      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+#      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
+#    - 'curl
+#      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+#      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"'
+#    - 'curl
+#      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+#      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"'
+#    - echo "**** Create asset links ****"
+#  # IF CREATE EXE
+##    - 'curl
+##      --request POST
+##      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+##      --data tag_name="${CI_COMMIT_TAG}"
+##      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+##      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+##      --data link_type="package"
+##        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+#    - 'curl
+#      --request POST
+#      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+#      --data tag_name="${CI_COMMIT_TAG}"
+#      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
+#      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
+#      --data link_type="package"
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+#    - 'curl
+#      --request POST
+#      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+#      --data tag_name="${CI_COMMIT_TAG}"
+#      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
+#      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
+#      --data link_type="package"
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+#    - 'curl
+#      --request POST
+#      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+#      --data tag_name="${CI_COMMIT_TAG}"
+#      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
+#      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
+#      --data link_type="package"
+#        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+#  rules:
+#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
+
+#Build Docker PreRelease:
+#  stage: Build Release
+#  image: griefed/gitlab-ci-cd:1.0.4
+#  services:
+#    - name: griefed/gitlab-ci-cd:1.0.4
+#      alias: docker
+#  variables:
+#    project_name: $CI_PROJECT_NAME
+#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+#  before_script:
+#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#    - docker buildx create --use --name grfdbuilder
+#  script:
+#    - docker buildx build
+#      --push
+#      --no-cache
+#      --platform linux/amd64,linux/arm64
+#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+#      --file Dockerfile.gradle.quasar.webservice .
+#  rules:
+#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
