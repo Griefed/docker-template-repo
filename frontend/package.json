@@ -28,7 +28,7 @@
     "@quasar/extras": "1.12.1",
     "axios": "0.24.0",
     "core-js": "3.19.1",
-    "quasar": "2.3.3",
+    "quasar": "2.3.4",
     "tsparticles": "1.37.5"
   },
   "devDependencies": {
