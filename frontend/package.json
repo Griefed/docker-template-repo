@@ -1,0 +1,77 @@
+{
+  "name": "repository",
+  "version": "0.0.1",
+  "description": "DESCRIPTION",
+  "productName": "REPOSITORY",
+  "private": true,
+  "author": {
+    "name": "Griefed",
+    "email": "griefed@griefed.de",
+    "url": "https://griefed.de/"
+  },
+  "bugs": {
+    "url": "https://github.com/Griefed/REPOSITORY/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Griefed/REPOSITORY.git"
+  },
+  "scripts": {
+    "start": "quasar dev",
+    "electron": "quasar dev -m electron",
+    "build": "quasar build",
+    "ebuild": "quasar build -m electron",
+    "lint": "eslint --ext .js,.vue,.ts ./",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@quasar/extras": "1.12.1",
+    "axios": "0.24.0",
+    "core-js": "3.19.1",
+    "quasar": "2.3.3",
+    "tsparticles": "1.37.5"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.16.3",
+    "@quasar/app": "^3.2.3",
+    "electron": "^16.0.1",
+    "electron-packager": "^15.4.0",
+    "eslint": "~8.2.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-vue": "^8.1.1",
+    "eslint-webpack-plugin": "^3.1.1"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": "^16.9.1",
+    "npm": "^7.23.0",
+    "yarn": "^1.22.11"
+  },
+  "contributors": [
+    {
+      "name": "Griefed",
+      "email": "griefed@griefed.de",
+      "url": "https://github.com/Griefed"
+    },
+    {
+      "name": "dependabot[bot]",
+      "email": "49699333+dependabot[bot]@users.noreply.github.com",
+      "url": "https://github.com/apps/dependabot"
+    },
+    {
+      "name": "github-actions[bot]",
+      "email": "41898282+github-actions[bot]@users.noreply.github.com",
+      "url": "https://github.com/apps/github-actions"
+    }
+  ]
+}

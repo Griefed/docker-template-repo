@@ -19,3 +19,4 @@ $RECYCLE.BIN/
 
 # IntelliJ Idea
 .idea
+/frontend/node/

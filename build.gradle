@@ -1,0 +1,255 @@
+//file:noinspection GroovyAssignabilityCheck
+//file:noinspection GrUnresolvedAccess
+import java.text.SimpleDateFormat
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
+
+plugins {
+    id 'java'
+    id 'idea'
+
+    id 'maven-publish'
+
+    id 'edu.sc.seis.launch4j' version '2.5.1'
+    id 'org.siouan.frontend-jdk8' version '6.0.0'
+
+    id 'org.springframework.boot' version '2.6.1'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
+sourceCompatibility = targetCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+    maven { url 'https://repo.spring.io/release' }
+}
+
+group = 'de.griefed'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['backend/main/java']
+        }
+        resources {
+            srcDirs = ['backend/main/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['backend/test/java']
+        }
+        resources {
+            srcDirs = ['backend/test/resources']
+        }
+    }
+}
+
+// Launch4j builds our .exe.
+launch4j {
+    mainClassName = 'de.griefed.REPOSITORY.Main'
+    jarTask = project.tasks.jar
+    fileDescription = "DESCRIPTION"
+    version = System.getenv("NEW_VERSION").toString()
+    textVersion = System.getenv("NEW_VERSION").toString()
+    windowTitle = "REPOSITORY"
+    copyright = "LGPL-3.0 License"
+    downloadUrl = "REPOSITORY/releases"
+    supportUrl = "REPOSITORY/issues"
+    libraryDir = 'libraries'
+    outputDir = 'libs'
+    icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
+}
+
+configurations {
+    all {
+        // Exclude logging from dependencies because we already have logging set up
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+
+    }
+
+    embed
+    implementation.extendsFrom(embed)
+}
+
+dependencies {
+    // Backend
+    embed 'commons-io:commons-io:2.11.0'
+
+    // WEB
+    //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
+    //embed 'org.springframework.boot:spring-boot-starter-validation:2.5.6'
+    embed 'org.springframework.boot:spring-boot-starter-web:2.5.6'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.0'
+    embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.1'
+    //embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.1'
+    //embed 'org.springframework.boot:spring-boot-starter-artemis:2.5.6'
+    //embed 'org.apache.activemq:artemis-jms-server:2.19.0'
+    embed 'org.apache.logging.log4j:log4j-web:2.14.1'
+
+    // Dev tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.0'
+
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.6'
+    testImplementation 'org.junit.platform:junit-platform-commons:1.8.1'
+}
+
+test {
+    useJUnitPlatform()
+
+    // Mention test result in logs
+    testLogging {
+        events "passed",
+               "skipped",
+               "failed"
+    }
+}
+
+// Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
+frontend {
+    packageJsonDirectory = file("${projectDir}/frontend")
+
+    nodeVersion = '16.9.1'
+    nodeInstallDirectory = file("${projectDir}/frontend/node")
+
+    yarnEnabled = false
+    //yarnVersion = "1.22.11"
+    //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
+
+    cleanScript = 'run clean'
+    assembleScript = 'run build'
+
+    // Print the architecture we are running on.
+    System.out.println(String.format("I am running on: %s", System.getProperty("os.arch")))
+
+    // If we are running on arm, specify Node path pattern so arm-builds succeed.
+    if (System.getProperty("os.arch").equals("arm")) {
+        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
+    } else if (System.getProperty("os.arch").equals("aarch64")) {
+        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-arm64.TYPE'
+    }
+}
+
+// Include specific files in resources folder, like the license and readme.
+tasks.register('about', Copy) {
+    dependsOn tasks.named('clean')
+
+    from layout.projectDirectory.file("LICENSE") into layout.projectDirectory.dir("backend/main/resources")
+    from layout.projectDirectory.file("README.md") into layout.projectDirectory.dir("backend/main/resources")
+}
+
+
+tasks.register('installQuasar', RunNpm) {
+    dependsOn tasks.named('installNode')
+    script = 'install -g @quasar/cli'
+}
+
+// Custom task to build and copy an up-to-date version of our frontend to SpringBoot.
+tasks.register('copyDist', Copy) {
+    dependsOn tasks.named('assembleFrontend')
+    // Delete old frontend files from SpringBoot.
+    def dirName = "backend/main/resources/static"
+    file( dirName ).list().each{
+        f ->
+            delete "${dirName}/${f}"
+    }
+
+    // Copy new frontend files to SpringBoot.
+    from layout.projectDirectory.dir("frontend/dist/spa")
+    into layout.projectDirectory.dir("backend/main/resources/static")
+}
+
+// Make sure everything is included in our JavaDoc.
+// Since this project is open source, we can include private etc. classes and methods docs.
+tasks.withType(Javadoc) {
+    options.addStringOption('encoding', 'UTF-8')
+}
+javadoc {
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+// Build JavaDoc and JavaSources JARs.
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+bootJar {
+    // Customize MANIFEST to include relevant information.
+    manifest {
+        attributes  "Start-Class"    : "de.griefed.REPOSITORY.Main",
+                    "Description"    : "DESCRIPTION",
+                    "Built-By"       : System.getProperty("user.name"),
+                    "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+                    "Created-By"     : "Gradle ${gradle.gradleVersion}",
+                    "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
+                    "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}"
+    }
+}
+
+// JAR configuration still needed for Launch4j.
+jar {
+    // No duplicates
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    // Include all libraries in our JAR-file.
+    from {
+        configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+
+    // Customize MANIFEST to include relevant information.
+    manifest {
+        attributes(
+                "Main-Class"     : "de.griefed.REPOSITORY.Main",
+                "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
+                "Description"    : "DESCRIPTION",
+                "Built-By"       : System.getProperty("user.name"),
+                "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+                "Created-By"     : "Gradle ${gradle.gradleVersion}",
+                "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
+                "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+        )
+    }
+    // Exclude files and folders which would otherwise bloat our JAR-file up.
+    exclude (
+            'META-INF/org',
+            'META-INF/org/**',
+            'META-INF/versions',
+            'META-INF/versions/**',
+            'META-INF/DEPENDENCIES',
+            'META-INF/LICENSE',
+            'META-INF/NOTICE',
+            'META-INF/CHANGES',
+            'META-INF/LICENSE.txt',
+            'META-INF/NOTICE.txt',
+            'META-INF/README.md',
+            'Log4j-**',
+            'icon.png',
+            'profile_icon.png'
+    )
+}
+
+// Publish the package with passed version to GHPR. Use ./gradlew -Pversion=${NEW_VERSION} publish, for example.
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Griefed/REPOSITORY")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            artifactId='REPOSITORY'
+            from (components.java)
+        }
+    }
+}

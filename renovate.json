@@ -1,7 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:base",
+    ":enableGradleLite"
   ],
-  "prConcurrentLimit": 5
+  "gradle-lite": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "matchPaths": ["package.json"]
+    }
+  ],
+  "prConcurrentLimit": 5,
+  "labels": ["dependencies"],
+  "assignees": ["Griefed"]
 }

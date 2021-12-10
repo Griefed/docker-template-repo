@@ -77,17 +77,17 @@ GET_FROM_FLEET
 
 # Configuration
 
-Configuration | Explanation
------------- | -------------
-[Restart policy](https://docs.docker.com/compose/compose-file/#restart) | "no", always, on-failure, unless-stopped
-TZ | Timezone
-PUID | for UserID
-PGID | for GroupID
-ports | The port where the service will be available at.
+| Configuration                                                           | Explanation                                      |
+|-------------------------------------------------------------------------|--------------------------------------------------|
+| [Restart policy](https://docs.docker.com/compose/compose-file/#restart) | "no", always, on-failure, unless-stopped         |
+| TZ                                                                      | Timezone                                         |
+| PUID                                                                    | for UserID                                       |
+| PGID                                                                    | for GroupID                                      |
+| ports                                                                   | The port where the service will be available at. |
 
 ## User / Group Identifiers
 
-When using volumes, permissions issues can arise between the host OS and the container. [Linuxserver.io](https://www.linuxserver.io/) avoids this issue by allowing you to specify the user `PUID` and group `PGID`.
+When using volumes, permissions issues can arise between the host OS and the container. We avoid this issue by allowing you to specify the user `PUID` and group `PGID`.
 
 Ensure any volume directories on the host are owned by the same user you specify and any permissions issues will vanish like magic.
 
