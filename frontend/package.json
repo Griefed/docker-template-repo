@@ -25,10 +25,10 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/extras": "1.12.1",
+    "@quasar/extras": "1.12.2",
     "axios": "0.24.0",
-    "core-js": "3.19.1",
     "quasar": "2.3.4",
+    "core-js": "3.19.3",
     "tsparticles": "1.37.5"
   },
   "devDependencies": {
