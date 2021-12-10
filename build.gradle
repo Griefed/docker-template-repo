@@ -86,7 +86,7 @@ dependencies {
     //embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.1'
     //embed 'org.springframework.boot:spring-boot-starter-artemis:2.5.6'
     //embed 'org.apache.activemq:artemis-jms-server:2.19.0'
-    embed 'org.apache.logging.log4j:log4j-web:2.14.1'
+    embed 'org.apache.logging.log4j:log4j-web:2.15.0'
 
     // Dev tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.1'
@@ -95,7 +95,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.1'
-    testImplementation 'org.junit.platform:junit-platform-commons:1.8.1'
+    testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
 test {
