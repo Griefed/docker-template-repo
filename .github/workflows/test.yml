@@ -2,16 +2,7 @@ name: Test
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
-      - dependabot
   pull_request:
-    branches:
-      - main
-      - develop
-      - dependabot
   workflow_dispatch:
 
 jobs:
