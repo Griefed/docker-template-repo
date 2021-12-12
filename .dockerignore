@@ -1,6 +1,11 @@
 .git
 .gitignore
 .github
+.gitlab
+.run
+.gitlab-ci.yml
+.releaserc.yml
+renovate.json
 .gitattributes
 README.md
 LICENSE.md

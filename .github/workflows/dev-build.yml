@@ -2,16 +2,7 @@ name: Create Dev-Build
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
-      - dependabot
   pull_request:
-    branches:
-      - main
-      - develop
-      - dependabot
   workflow_dispatch:
 
 jobs:
@@ -21,30 +12,32 @@ jobs:
       - uses: actions/checkout@v2
 
       # DOCKER RELATED
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: griefed
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile.gradle.quasar.develop
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-#            ghcr.io/griefed/REPOSITORY:latest
-#            ghcr.io/griefed/REPOSITORY:${{ steps.tag.outputs.tag }}
-#            griefed/REPOSITORY:latest
-#            griefed/REPOSITORY:${{ steps.tag.outputs.tag }}
+#      - name: Set up QEMU
+#        uses: docker/setup-qemu-action@v1
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v1
+#      - name: Login to DockerHub
+#        uses: docker/login-action@v1
+#        with:
+#          username: griefed
+#          password: ${{ secrets.DOCKERHUB_TOKEN }}
+#      - name: Login to GitHub Container Registry
+#        uses: docker/login-action@v1
+#        with:
+#          registry: ghcr.io
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+
+  # CHANGE TO DOCKERFILE YOU WANT TO BUILD WITH
+#      - name: Build and push
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: .
+#          file: ./Dockerfile
+#          platforms: linux/amd64,linux/arm64
+#          push: true
+#          tags: |
+#            ghcr.io/griefed/REPOSITORY:${{ github.ref_name }}
+#            ghcr.io/griefed/REPOSITORY:${{ github.ref_name }}-${{ github.sha }}
+#            griefed/REPOSITORY:${{ github.ref_name }}
+#            griefed/REPOSITORY:${{ github.ref_name }}-${{ github.sha }}
