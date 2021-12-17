@@ -15,6 +15,9 @@ updates:
      - "dependencies"
      - "github-actions"
     target-branch: "dependabot"
+    pull-request-branch-name:
+      separator: "-"
+
 
   # IF JAVA PROJECT
 #  - package-ecosystem: "gradle"
@@ -27,6 +30,9 @@ updates:
 #      - "dependencies"
 #      - "gradle"
 #    target-branch: "dependabot"
+#    pull-request-branch-name:
+#      separator: "-"
+
 
   # IF QUASAR PROJECT
 #  - package-ecosystem: "npm"
@@ -39,6 +45,9 @@ updates:
 #      - "dependencies"
 #      - "npm"
 #    target-branch: "dependabot"
+#    pull-request-branch-name:
+#      separator: "-"
+
 
   # IF DOCKER PROJECT
 #  - package-ecosystem: "docker"
@@ -51,3 +60,6 @@ updates:
 #      - "dependencies"
 #      - "docker"
 #    target-branch: "dependabot"
+#    pull-request-branch-name:
+#      separator: "-"
+
