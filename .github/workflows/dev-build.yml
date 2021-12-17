@@ -1,4 +1,4 @@
-name: Create Dev-Build
+name: Create Docker Dev-Build
 
 on:
   push:
@@ -6,12 +6,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  docker-dev-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      # DOCKER RELATED
 #      - name: Set up QEMU
 #        uses: docker/setup-qemu-action@v1
 #      - name: Set up Docker Buildx
@@ -27,13 +25,12 @@ jobs:
 #          registry: ghcr.io
 #          username: ${{ github.actor }}
 #          password: ${{ secrets.GITHUB_TOKEN }}
-
-  # CHANGE TO DOCKERFILE YOU WANT TO BUILD WITH
 #      - name: Build and push
 #        uses: docker/build-push-action@v2
 #        with:
 #          context: .
 #          file: ./Dockerfile
+#          build-args: BRANCH_OR_TAG=${{ github.ref_name }}
 #          platforms: linux/amd64,linux/arm64
 #          push: true
 #          tags: |

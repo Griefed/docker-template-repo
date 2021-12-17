@@ -6,87 +6,93 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+#===================================#
+#               JAVA                #
+#===================================#
+  gradle:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-  # IF JAVA PROJECT
-
-#      - name: Set up JDK 8
-#        uses: actions/setup-java@v2
-#        with:
-#          distribution: 'adopt'
-#          java-version: '8'
-#      - name: Where is Java
-#        run: which java
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+      - name: Where is Java
+        run: which java
 #      - name: Grant execute permission for gradlew
 #        run: chmod +x gradlew
 #      - name: Build with Gradle
 #        run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info
 #      - name: List files in libs
 #        run: ls -ahl build/libs
-
-  # IF QUASAR PROJECT
-
-#      - name: Setup Node.js environment
-#        uses: actions/setup-node@v2.4.1
-#        with:
-#          # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
-#          node-version: '>= 16.9.1'
-#          # Set this option if you want the action to check for the latest available version that satisfies the version spec
-#          check-latest: false
+#
+#===================================#
+#              QUASAR               #
+#===================================#
+  quasar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.4.1
+        with:
+          # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
+          node-version: '>= 16.9.1'
+          # Set this option if you want the action to check for the latest available version that satisfies the version spec
+          check-latest: false
 #      - run: npm install -g @quasar/cli
 #      - run: npm install
 #      - run: quasar build
 #      - run: pwd && ls -al *
-
-#      # DOCKER RELATED
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v1
-#      - name: Set up Docker Buildx
-#        uses: docker/setup-buildx-action@v1
+#
+#===================================#
+#              DOCKER               #
+#===================================#
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 #      - name: Build
 #        uses: docker/build-push-action@v2
 #        with:
 #          context: .
-#          file: ./Dockerfile.gradle.quasar
+#          file: ./Dockerfile
+#          build-args: BRANCH_OR_TAG=${{ github.ref_name }}
 #          platforms: linux/amd64,linux/arm64
 #          push: false
+#===================================#
+#             ELECTRON              #
+#===================================#
+  electron:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 0
 
-  # IF ELECTRON PROJECT
+      - name: We are running on
+        run: echo matrix.os is ${{ matrix.os }}
+        # Either:
+        #  1. macos-latest
+        #  2. ubuntu-latest
+        #  3. windows-latest
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.4.1
+        with:
+          # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
+          node-version: '>= 16.9.1'
+          # Set this option if you want the action to check for the latest available version that satisfies the version spec
+          check-latest: false
 
-#  electron:
-#    needs: test
-#    runs-on: ${{ matrix.os }}
-#
-#    strategy:
-#      matrix:
-#        os: [macos-latest, ubuntu-latest, windows-latest]
-#
-#    steps:
-#      # GET LATEST CODE
-#      - name: Checkout latest code
-#        uses: actions/checkout@master
-#        with:
-#          fetch-depth: 0
-#
-#      - name: We are running on
-#        run: echo matrix.os is ${{ matrix.os }}
-#        # Either:
-#        #  1. macos-latest
-#        #  2. ubuntu-latest
-#        #  3. windows-latest
-#
-#      # SETUP NODE ENVIRONMENT
-#      - name: Setup Node.js environment
-#        uses: actions/setup-node@v2.4.1
-#        with:
-#          # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
-#          node-version: '>= 16.9.1'
-#          # Set this option if you want the action to check for the latest available version that satisfies the version spec
-#          check-latest: false
-#
 #      - name: Build/release Electron app
 #        uses: vedaprakashms/quasar_electron_build@V0.0.1
 #        with:

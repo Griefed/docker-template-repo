@@ -1,12 +1,15 @@
 FROM node:16.13.1-alpine3.13 AS builder
 
+ARG BRANCH_OR_TAG=main
+
 RUN \
   apk add \
     git \
     npm && \
   git clone \
-    REPOSITORY.git \
-      /tmp/REPOSITORY && \
+    -b $BRANCH_OR_TAG \
+      REPOSITORY.git \
+        /tmp/REPOSITORY && \
   cd /tmp/REPOSITORY && \
   npm install -g npm@7.23.0 && \
   npm install -g @quasar/cli && \
