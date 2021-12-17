@@ -9,6 +9,7 @@
   },
   "packageRules": [
     {
+      "extends": "config:base",
       "matchPaths": ["package.json"]
     }
   ],
