@@ -26,6 +26,17 @@ jobs:
 #        run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info
 #      - name: List files in libs
 #        run: ls -ahl build/libs
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: build-artifacts-gradle
+#          path: build/libs/
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+#      - uses: actions/upload-artifact@v2
+#        if: failure()
+#        with:
+#          name: gradle-report
+#          path: build/reports/tests/test/
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 #
 #===================================#
 #              QUASAR               #
@@ -45,6 +56,11 @@ jobs:
 #      - run: npm install
 #      - run: quasar build
 #      - run: pwd && ls -al *
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: build-artifacts
+#          path: dist/spa/ # frontend/dist/spa if Gradle Spring Boot project for example
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 #
 #===================================#
 #              DOCKER               #
@@ -57,14 +73,19 @@ jobs:
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-#      - name: Build
+#      - name: Build and push
 #        uses: docker/build-push-action@v2
 #        with:
 #          context: .
 #          file: ./Dockerfile
 #          build-args: BRANCH_OR_TAG=${{ github.ref_name }}
-#          platforms: linux/amd64,linux/arm64
-#          push: false
+#          platforms: linux/amd64,linux/arm64 # Add linux/arm/v7 if applicable
+#          push: true
+#          tags: |
+#            ghcr.io/griefed/REPOSITORY:${{ github.ref_name }}
+#            ghcr.io/griefed/REPOSITORY:${{ github.ref_name }}-${{ github.sha }}
+#            griefed/REPOSITORY:${{ github.ref_name }}
+#            griefed/REPOSITORY:${{ github.ref_name }}-${{ github.sha }}
 #===================================#
 #             ELECTRON              #
 #===================================#
@@ -120,3 +141,10 @@ jobs:
 #
 #      - name: List files
 #        run: ls
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: electron-artifacts ${{ matrix.os }}
+#          path: |
+#            dist/electron/
+#            !dist/electron/UnPackaged
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`

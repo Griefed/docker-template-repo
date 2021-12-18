@@ -72,6 +72,19 @@ jobs:
 #          mv build/libs/REPOSITORY-javadoc.jar build/libs/REPOSITORY-${{ steps.tag.outputs.tag }}-javadoc.jar
 #          mv build/libs/REPOSITORY-sources.jar build/libs/REPOSITORY-${{ steps.tag.outputs.tag }}-sources.jar
 #
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: build-artifacts-gradle
+#          path: |
+#            build/libs/
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+#      - uses: actions/upload-artifact@v2
+#        if: failure()
+#        with:
+#          name: report
+#          path: build/reports/tests/test/
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+#
 #      # UPLOAD ASSETS TO RELEASE
 #      - name: Upload Release Asset Main Jar
 #        id: upload-release-asset
@@ -169,6 +182,12 @@ jobs:
 #          recursive: true
 #          dest: REPOSITORY-NGINX-${{ steps.tag.outputs.tag }}.zip
 #
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: build-artifacts
+#          path: dist/spa/ # frontend/dist/spa if Gradle Spring Boot project for example
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+#
 #      # Upload NGINX Assets
 #      - name: Upload Release Archive tar.gz
 #        id: upload-release-asset-archive-targz
@@ -262,6 +281,14 @@ jobs:
 #
 #      - name: List files
 #        run: ls dist/electron
+#
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: electron-artifacts ${{ matrix.os }}
+#          path: |
+#            dist/electron/
+#            !dist/electron/UnPackaged
+#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 #
 #      - name: Rename folders
 #        run: |
