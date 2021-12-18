@@ -49,7 +49,7 @@ jobs:
         uses: actions/setup-node@v2.5.0
         with:
           # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
-          node-version: '>= 16.9.1'
+          node-version: '>= 16.13.1'
           # Set this option if you want the action to check for the latest available version that satisfies the version spec
           check-latest: false
 #      - run: npm install -g @quasar/cli
@@ -69,6 +69,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: griefed
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -78,14 +95,14 @@ jobs:
 #        with:
 #          context: .
 #          file: ./Dockerfile
-#          build-args: BRANCH_OR_TAG=${{ github.ref_name }}
+#          build-args: BRANCH_OR_TAG=${{ steps.branch-name.outputs.current_branch }}
 #          platforms: linux/amd64,linux/arm64 # Add linux/arm/v7 if applicable
 #          push: true
 #          tags: |
-#            ghcr.io/griefed/REPOSITORY:${{ github.ref_name }}
-#            ghcr.io/griefed/REPOSITORY:${{ github.ref_name }}-${{ github.sha }}
-#            griefed/REPOSITORY:${{ github.ref_name }}
-#            griefed/REPOSITORY:${{ github.ref_name }}-${{ github.sha }}
+#            ghcr.io/griefed/REPOSITORY:${{ steps.branch-name.outputs.current_branch }}
+#            ghcr.io/griefed/REPOSITORY:${{ steps.branch-name.outputs.current_branch }}-${{ github.sha }}
+#            griefed/REPOSITORY:${{ steps.branch-name.outputs.current_branch }}
+#            griefed/REPOSITORY:${{ steps.branch-name.outputs.current_branch }}-${{ github.sha }}
 #===================================#
 #             ELECTRON              #
 #===================================#
@@ -141,6 +158,7 @@ jobs:
 #
 #      - name: List files
 #        run: ls
+#
 #      - uses: actions/upload-artifact@v2
 #        with:
 #          name: electron-artifacts ${{ matrix.os }}
