@@ -20,26 +20,26 @@ jobs:
           java-version: '8'
       - name: Where is Java
         run: which java
-#      - name: Grant execute permission for gradlew
-#        run: chmod +x gradlew
-#      - name: Build with Gradle
-#        run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info
-#      - name: List files in libs
-#        run: ls -ahl build/libs
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: build-artifacts-gradle
-#          path: |
-#            build/libs/
-#            !build/libs/libraries/
-#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-#      - uses: actions/upload-artifact@v2
-#        if: failure()
-#        with:
-#          name: gradle-report
-#          path: build/reports/tests/test/
-#          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-#
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info
+      - name: List files in libs
+        run: ls -ahl build/libs
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts-gradle
+          path: |
+            build/libs/
+            !build/libs/libraries/
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: gradle-report
+          path: build/reports/tests/test/
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
 #===================================#
 #              QUASAR               #
 #===================================#
