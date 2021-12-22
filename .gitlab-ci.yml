@@ -3,6 +3,7 @@
 #  - Documentation
 #  - Release
 #  - Build Release
+#  - Other
 
 #variables:
 #  project_name: "$CI_PROJECT_NAME"
@@ -191,7 +192,7 @@
 
 #Gradle Dependency-Checks:
 #  image: griefed/baseimage-ubuntu-jdk-8:2.0.0
-#  stage: Tests
+#  stage: Other
 #  before_script:
 #    - echo "**** Running in $CI_JOB_ID ****"
 #    - echo "**** Java location ****"
