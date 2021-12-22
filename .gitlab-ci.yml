@@ -156,10 +156,10 @@ Gradle Test:
       build/libs/REPOSITORY.jar
       build/libs/REPOSITORY-$CI_COMMIT_REF_NAME.jar
     - mv
-      build/libs/repository-javadoc.jar
+      build/libs/REPOSITORY-javadoc.jar
       build/libs/REPOSITORY-javadoc-$CI_COMMIT_REF_NAME.jar
     - mv
-      build/libs/repository-sources.jar
+      build/libs/REPOSITORY-sources.jar
       build/libs/REPOSITORY-sources-$CI_COMMIT_REF_NAME.jar
   coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
