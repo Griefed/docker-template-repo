@@ -169,6 +169,7 @@
 #  # IF QUASAR FRONTEND
 #  #    - frontend/dist/spa
 #      - build/libs/REPOSITORY.jar
+#      - build/jacoco/test/jacocoTestReport.xml
 #      - build/reports/tests/test
 #    expire_in: 1 week
 
@@ -404,6 +405,17 @@
 #      --file Dockerfile .
 #  rules:
 #    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+
+#coverage:
+#  stage: Other
+#  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+#  script:
+#    - python /opt/cover2cover.py build/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/backend/main/java/ > build/cobertura.xml
+#    - python /opt/source2filename.py build/cobertura.xml
+#  needs: ["Gradle Test"]
+#  artifacts:
+#    reports:
+#      cobertura: build/cobertura.xml
 
 #pages:
 #  # IF JAVA PROJECT
