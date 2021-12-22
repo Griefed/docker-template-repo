@@ -89,19 +89,12 @@ dependencies {
 
     // WEB
     //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
-<<<<<<< HEAD
-    //embed 'org.springframework.boot:spring-boot-starter-validation:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.1'
-=======
-    //embed 'org.springframework.boot:spring-boot-starter-validation:2.5.6'
+    //embed 'org.springframework.boot:spring-boot-starter-validation:2.6.2'
     embed 'org.springframework.boot:spring-boot-starter-web:2.6.2'
     embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.2'
     embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.2'
->>>>>>> 10c80b19948733d97095adf36c06f8b1d8d68383
-    //embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.1'
-    //embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.1'
+    //embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.2'
+    //embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.2'
     //embed 'org.apache.activemq:artemis-jms-server:2.19.0'
     embed 'org.apache.logging.log4j:log4j-web:2.17.0'
 
