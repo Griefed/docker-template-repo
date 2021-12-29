@@ -99,10 +99,10 @@ dependencies {
     embed 'org.apache.logging.log4j:log4j-web:2.17.1'
 
     embed 'org.apache.logging.log4j:log4j-api:2.17.1'
-    embed 'org.apache.logging.log4j:log4j-core:2.17.0'
+    embed 'org.apache.logging.log4j:log4j-core:2.17.1'
     embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.0'
     embed 'org.apache.logging.log4j:log4j-web:2.17.1'
-    embed 'org.apache.logging.log4j:log4j-jul:2.17.0'
+    embed 'org.apache.logging.log4j:log4j-jul:2.17.1'
 
     // Dev tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.2'
