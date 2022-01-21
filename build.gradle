@@ -7,6 +7,8 @@ plugins {
     id 'java'
     id 'idea'
 
+    //id 'signing'
+
     id 'jacoco'
 
     id "com.github.ben-manes.versions" version '0.39.0'
@@ -287,3 +289,11 @@ publishing {
         }
     }
 }
+
+/*
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign stuffZip
+}*/
