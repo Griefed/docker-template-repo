@@ -30,7 +30,7 @@
     "axios": "0.25.0",
     "quasar": "2.4.13",
     "core-js": "3.20.3",
-    "tsparticles": "1.39.0"
+    "tsparticles": "1.40.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.16.5",
