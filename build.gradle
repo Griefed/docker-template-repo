@@ -7,12 +7,12 @@ plugins {
     id 'java'
     id 'idea'
 
-    //id 'signing'
-
     id 'jacoco'
 
     id "com.github.ben-manes.versions" version '0.41.0'
 
+    id 'signing'
+    id 'java-library'
     id 'maven-publish'
 
     id 'edu.sc.seis.launch4j' version '2.5.1'
@@ -48,28 +48,6 @@ sourceSets {
         resources {
             srcDirs = ['backend/test/resources']
         }
-    }
-}
-
-// Launch4j builds our .exe.
-launch4j {
-    mainClassName = 'de.griefed.REPOSITORY.Main'
-    jarTask = project.tasks.jar
-    fileDescription = "DESCRIPTION"
-    version = System.getenv("NEW_VERSION").toString()
-    textVersion = System.getenv("NEW_VERSION").toString()
-    windowTitle = "REPOSITORY"
-    copyright = "LGPL-3.0 License"
-    downloadUrl = "REPOSITORY/releases"
-    supportUrl = "REPOSITORY/issues"
-    libraryDir = 'libraries'
-    outputDir = 'libs'
-    icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
-}
-
-tasks.named("dependencyUpdates").configure {
-    rejectVersionIf {
-        isNonStable(it.candidate.version)
     }
 }
 
@@ -117,6 +95,69 @@ dependencies {
     testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
+// Launch4j builds our .exe.
+launch4j {
+    mainClassName = 'de.griefed.REPOSITORY.Main'
+    jarTask = project.tasks.jar
+    fileDescription = "DESCRIPTION"
+    version = System.getenv("NEW_VERSION").toString()
+    textVersion = System.getenv("NEW_VERSION").toString()
+    windowTitle = "REPOSITORY"
+    copyright = "LGPL-3.0 License"
+    downloadUrl = "REPOSITORY/releases"
+    supportUrl = "REPOSITORY/issues"
+    libraryDir = 'libraries'
+    outputDir = 'libs'
+    icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
+}
+
+// Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
+frontend {
+    packageJsonDirectory = file("${projectDir}/frontend")
+
+    nodeVersion = '16.9.1'
+    nodeInstallDirectory = file("${projectDir}/frontend/node")
+
+    yarnEnabled = false
+    //yarnVersion = "1.22.11"
+    //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
+
+    cleanScript = 'run clean'
+    assembleScript = 'run build'
+
+    // Print the architecture we are running on.
+    System.out.println(String.format("I am running on: %s", System.getProperty("os.arch")))
+
+    // If we are running on arm, specify Node path pattern so arm-builds succeed.
+    if (System.getProperty("os.arch").equals("arm")) {
+        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
+    } else if (System.getProperty("os.arch").equals("aarch64")) {
+        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-arm64.TYPE'
+    }
+}
+
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+tasks.named("dependencyUpdates").configure {
+
+    checkForGradleUpdate = true
+    outputFormatter = "json"
+
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
+                    reject('Release candidate')
+                }
+            }
+        }
+    }
+}
+
+
 test {
     useJUnitPlatform()
 
@@ -143,32 +184,6 @@ jacocoTestReport {
 jacoco {
     toolVersion = "0.8.7"
     reportsDirectory = layout.buildDirectory.dir('jacoco')
-}
-
-
-// Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
-frontend {
-    packageJsonDirectory = file("${projectDir}/frontend")
-
-    nodeVersion = '16.9.1'
-    nodeInstallDirectory = file("${projectDir}/frontend/node")
-
-    yarnEnabled = false
-    //yarnVersion = "1.22.11"
-    //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
-
-    cleanScript = 'run clean'
-    assembleScript = 'run build'
-
-    // Print the architecture we are running on.
-    System.out.println(String.format("I am running on: %s", System.getProperty("os.arch")))
-
-    // If we are running on arm, specify Node path pattern so arm-builds succeed.
-    if (System.getProperty("os.arch").equals("arm")) {
-        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
-    } else if (System.getProperty("os.arch").equals("aarch64")) {
-        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-arm64.TYPE'
-    }
 }
 
 // Include specific files in resources folder, like the license and readme.
@@ -205,8 +220,11 @@ tasks.register('copyDist', Copy) {
 tasks.withType(Javadoc) {
     options.addStringOption('encoding', 'UTF-8')
 }
+
 javadoc {
-    options.memberLevel = JavadocMemberLevel.PRIVATE
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
     classpath = sourceSets.main.runtimeClasspath
 }
 
@@ -220,12 +238,16 @@ bootJar {
     // Customize MANIFEST to include relevant information.
     manifest {
         attributes  "Start-Class"    : "de.griefed.REPOSITORY.Main",
+                    "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
                     "Description"    : "DESCRIPTION",
                     "Built-By"       : System.getProperty("user.name"),
                     "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                     "Created-By"     : "Gradle ${gradle.gradleVersion}",
                     "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
-                    "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}"
+                    "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+                    "Implementation-Version" : "${project.version}",
+                    "Implementation-Title"   : "REPOSITORY",
+                    "Application-Name": "REPOSITORY"
     }
 }
 
@@ -250,51 +272,96 @@ jar {
                 "Created-By"     : "Gradle ${gradle.gradleVersion}",
                 "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
                 "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+                "Implementation-Version" : "${project.version}",
+                "Implementation-Title"   : "REPOSITORY",
+                "Application-Name": "REPOSITORY"
         )
     }
-    // Exclude files and folders which would otherwise bloat our JAR-file up.
-    exclude (
-            'META-INF/org',
-            'META-INF/org/**',
-            'META-INF/versions',
-            'META-INF/versions/**',
-            'META-INF/DEPENDENCIES',
-            'META-INF/LICENSE',
-            'META-INF/NOTICE',
-            'META-INF/CHANGES',
-            'META-INF/LICENSE.txt',
-            'META-INF/NOTICE.txt',
-            'META-INF/README.md',
-            'Log4j-**',
-            'icon.png',
-            'profile_icon.png'
-    )
 }
 
-// Publish the package with passed version to GHPR. Use ./gradlew -Pversion=${NEW_VERSION} publish, for example.
 publishing {
+    publications {
+        mavenJava(MavenPublication) {
+
+            groupId = 'de.griefed'
+            artifactId = 'REPOSITORY'
+            from components.java
+            version = project.version
+
+            pom {
+                name = 'REPOSITORY'
+                description = 'DESCRIPTION'
+                url = 'REPOSITORY_URL'
+
+                licenses {
+                    license {
+                        name = 'LICENSE'
+                        url = 'OFFICIAL_URL_TO_LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'griefed'
+                        name = 'Griefed'
+                        email = 'griefed@griefed.de'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git:git.griefed.de/REPOSITORY_URL.git'
+                    developerConnection = 'scm:git:ssh://git.griefed.de/REPOSITORY_URL.git'
+                    url = 'REPOSITORY_URL'
+                }
+
+            }
+        }
+    }
+
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Griefed/REPOSITORY")
+            url = "https://maven.pkg.github.com/REPOSITORY_URL"
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
-    }
-    publications {
-        gpr(MavenPublication) {
-            artifactId='REPOSITORY'
-            from (components.java)
+        maven {
+            url = "https://git.griefed.de/api/v4/projects/REPOSITORY_URL_ID/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                name = "Private-Token"
+                value = System.getenv("GITLAB_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+        maven {
+            url = "https://gitlab.com/api/v4/projects/REPOSITORY_URL_ID/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                name = "Private-Token"
+                value = System.getenv("GITLABCOM_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+        maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
         }
     }
 }
 
-/*
 signing {
     def signingKey = findProperty("signingKey")
     def signingPassword = findProperty("signingPassword")
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign stuffZip
-}*/
+
+    useInMemoryPgpKeys(signingKey,signingPassword)
+    sign publishing.publications.mavenJava
+}
