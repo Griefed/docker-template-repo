@@ -16,7 +16,7 @@ variables:
   SECRET_DETECTION_EXCLUDED_PATHS: ""
 
 services:
-  - name: griefed/gitlab-ci-cd:2.0.0
+  - name: griefed/gitlab-ci-cd:2.0.2
     alias: docker
 
 sast:
@@ -357,7 +357,7 @@ coverage:
       cobertura: build/cobertura.xml
 
 Gradle Dependency-Checks:
-  image: griefed/baseimage-ubuntu-jdk-8:2.0.3
+  image: griefed/baseimage-ubuntu-jdk-8:2.0.5
   stage: Other
   allow_failure: true
   before_script:
