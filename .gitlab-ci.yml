@@ -357,7 +357,7 @@ coverage:
       cobertura: build/cobertura.xml
 
 Gradle Dependency-Checks:
-  image: griefed/baseimage-ubuntu-jdk-8:2.0.6
+  image: griefed/baseimage-ubuntu-jdk-8:2.0.7
   stage: Other
   allow_failure: true
   before_script:

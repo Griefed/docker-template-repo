@@ -1,4 +1,4 @@
-FROM griefed/baseimage-ubuntu-jdk-8:2.0.6 AS builder
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.7 AS builder
 
 ARG BRANCH_OR_TAG=main
 
@@ -15,7 +15,7 @@ RUN \
   ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info -x test && \
   ls -ahl ./build/libs/
 
-FROM griefed/baseimage-ubuntu-jdk-8:2.0.6
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.7
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
 LABEL description="DESCRIPTION"
