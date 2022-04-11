@@ -26,14 +26,14 @@ jobs:
         run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info
       - name: List files in libs
         run: ls -ahl build/libs
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts-gradle
           path: |
             build/libs/
             !build/libs/libraries/
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: gradle-report
@@ -58,7 +58,7 @@ jobs:
 #      - run: npm install
 #      - run: quasar build
 #      - run: pwd && ls -al *
-#      - uses: actions/upload-artifact@v2
+#      - uses: actions/upload-artifact@v3
 #        with:
 #          name: build-artifacts
 #          path: dist/spa/ # frontend/dist/spa if Gradle Spring Boot project for example
@@ -143,7 +143,7 @@ jobs:
 #      - name: List files
 #        run: ls dist/electron
 #
-#      - uses: actions/upload-artifact@v2
+#      - uses: actions/upload-artifact@v3
 #        with:
 #          name: electron-artifacts ${{ matrix.os }}
 #          path: |
