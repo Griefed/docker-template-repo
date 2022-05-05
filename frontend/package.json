@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@quasar/extras": "1.13.6",
-    "axios": "0.26.1",
+    "axios": "0.27.2",
     "quasar": "2.6.6",
     "core-js": "3.21.1",
     "tsparticles": "1.42.4"
