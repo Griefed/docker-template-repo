@@ -33,8 +33,8 @@
     "tsparticles": "2.0.6"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "7.18.9",
     "electron": "19.0.11",
-    "@babel/eslint-parser": "7.18.2",
     "@quasar/app": "3.3.3",
     "electron-packager": "15.5.1",
     "eslint": "8.19.0",
