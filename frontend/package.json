@@ -26,7 +26,7 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/extras": "1.14.2",
+    "@quasar/extras": "1.15.1",
     "axios": "0.27.2",
     "quasar": "2.7.7",
     "core-js": "3.23.3",
